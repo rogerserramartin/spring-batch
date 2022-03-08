@@ -28,8 +28,11 @@ public class SampleJob {
         // a job can have a single step or multiple steps, eg: leer datos,, grabar datos, etc
         return jobBuilderFactory.get("First Job") // job name
                 .start(firstStep()) //start quiere un step
+                .next(secondStep()) // usamos next para concatenar steps/pasos // o sea, el primero es start() y todos los siguientes next()
                 .build();
 
+        // un tasklet realiza una tarea dentro de un step
+        // un chunk funciona con trozos de datos, en lugar de hacerlo todo de golpe, lo hace a trocitos, cada X cantidad
     }
 
     private Step firstStep(){
@@ -39,11 +42,27 @@ public class SampleJob {
                 .build();
     }
 
+    private Step secondStep(){
+        return stepBuilderFactory.get("Second Step")
+                // definir que tarea queremos con tasklet step
+                .tasklet(secondTask())
+                .build();
+    }
+
     private Tasklet firstTask(){
         return new Tasklet() {
             @Override
             public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
                 System.out.println("This is my first tasklet step");
+                return RepeatStatus.FINISHED;
+            }
+        };
+    }
+    private Tasklet secondTask(){
+        return new Tasklet() {
+            @Override
+            public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
+                System.out.println("This is my second tasklet step");
                 return RepeatStatus.FINISHED;
             }
         };
